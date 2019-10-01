@@ -2,7 +2,7 @@
 
 const hereAppID = "B1HVlBoZ1AmUk9dTpRBt";
 const hereAppCode = "Y2o-yq9auIlAe9mFO-9p4A";
-const googleApi = "AIzaSyAiXf-w3mmDqvhBcI0742QKBPap0D0c-PM";
+const googleApi = "";
 
 const searchUrl = "https://maps.googleapis.com/maps/api/";
 
