@@ -1,0 +1,115 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+  }
+  
+  body {
+    font-size: 1em;
+  }
+  
+  .main-body {
+    background-color: #EFEFEF;
+  }
+  
+  #home {
+    min-height: 100vh;
+  }
+  
+  .center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  label, input {
+    font-size: 1.05em;
+    margin-bottom: 5px;
+  }
+  
+  label {
+    font-weight: 700;
+  }
+  
+  input {
+    padding: 5px 10px;
+    width: 100%;
+    font-weight: 400;
+  }
+  
+  #search-btn {
+    padding: 10px 15px;
+    border-radius: 3px;
+    margin-top: 5px;
+    font-size: 1em;
+  }
+  
+  #search-btn:hover {
+    cursor: pointer; 
+  }
+  
+  #results {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .error-message {
+      color: red;
+  }
+  
+  #results-list, #results-list li {
+    list-style-type: none;
+  }
+  
+  nav {
+    display: flex;
+    flex-direction: column;
+    background-color: #EFEFEF;
+    width: 100%;
+    padding: 10px 15px;
+  }
+  
+  @media screen and (min-width: 768px) {
+    nav {
+      justify-content: center;
+    }
+  
+    form {
+      flex-direction: row;
+      margin: 30px 100px;
+    }
+  
+    form .center {
+      background-color: white;
+      padding: 5px 0 5px 5px;
+    }
+  
+    form input {
+      border: none;
+      padding: 5px;
+      margin: 0;
+      font-size: 1.2em;
+    }
+  
+    form input[name=find] {
+      border-right: 1px solid grey;
+    }
+  
+    form label {
+      vertical-align: middle;
+      font-size: 1.4em;
+      margin: 0;
+    }
+  
+    .search-icon {
+      font-size: 1.5em;
+      padding: 10px 15px;
+    }
+  }
