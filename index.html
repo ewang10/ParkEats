@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <meta name="description" content="API Hack Capstone" />
-    <title>API Hack Capstone</title>
+    <title>ParkEats</title>
     <link rel="shortcut icon" href="#">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.1/css/all.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.1/css/v4-shims.css">
@@ -16,8 +16,26 @@
 
 <body class="main-body">
 
+    <header>
+        <h1><a class="logo" href="./index.html">ParkEats</a></h1>
+        <form>
+            <div class="center">
+                <label for="state">State(s)</label>
+            </div>
+            <input id="state" name="state" class="js-state" placeholder="CA, MA, RI..." required />
+            <button type="submit" class="search-icon">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </header>
+
     <main role="main" aria-live="assertive">
-        <section id="home" class="center"></section>
+
+        <p class="js-error-message error-message"></p>
+        <section id="results">
+            <ul id="results-list">
+            </ul>
+        </section>
     </main>
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
