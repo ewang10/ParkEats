@@ -121,12 +121,11 @@ function getVenueDetail(find) {
     });
 }
 
-function getVenues(find, near) {
+function getVenues(near) {
   let url = searchGoogleUrl + "place/nearbysearch/json?";
   const params = {
     location: near,
     rankby: "distance",
-    keyword: find,
     type: "restaurant",
     key: googleApi,
   };
@@ -169,7 +168,7 @@ function displaySelectedPark(park) {
   let near = floats[0] + "," + floats[1];
   //console.log(near);
   //$('#results-list').empty();
-  getVenues("food", near);
+  getVenues(near);
 }
 
 function getGeocode(park, address) {
