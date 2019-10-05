@@ -7,6 +7,7 @@
 
 body {
   font-size: 1em;
+  font-family: 'Open Sans', sans-serif;
   background-color: #EFEFEF;
 }
 
@@ -29,6 +30,10 @@ body {
   border: solid 3px white;
 }
 
+h1, h2, h3, h4 {
+  font-family: 'Open Sans Condensed', sans-serif;
+}
+
 h1, h2 {
   text-align: center;
   margin: 0;
@@ -39,17 +44,12 @@ h1, h2 {
 }
 
 h2 {
-  font-size: 1.2em;
   padding: 10px 15px;
 }
 
 @media screen and (min-width: 768px) {
   h1 {
     font-size: 4em;
-  }
-
-  h2 {
-    font-size: 1.5em;
   }
 
   #park .logo, 
@@ -112,6 +112,7 @@ form .center {
 label, input {
   font-size: 1.05em;
   border: none;
+  font-family: 'Open Sans', sans-serif;
 }
 
 label {
@@ -193,6 +194,7 @@ input {
   line-height: 150%;
   max-height: 210px;
   flex: 1 1 100%;
+  font-size: 1.2em;
 }
 
 .candidate .candidate-details::after,
@@ -214,6 +216,7 @@ input {
 .candidate-details .candidate-name {
   display: block;
   font-weight: 700;
+  font-size: 1.5em;
 }
 
 .candidate-details .rating {
@@ -279,6 +282,7 @@ input {
   max-width: 253px;
 }
 
+/*
 #park-details .image-container button {
   position: absolute;
   right: 15px;
@@ -287,12 +291,12 @@ input {
   padding: 7px 5px;
   text-align: center;
 }
-
+*/
 #park-details .park-name {
   width: 100%;
   text-align: center;
-  margin: 10px auto;
-  font-size: 1.5em;
+  margin: 20px auto 10px;
+  font-size: 2em;
 }
 
 .park-contacts, .park-fees {
@@ -303,6 +307,7 @@ input {
 
 #park-details h4 {
   margin-bottom: 10px;
+  font-size: 1.5em;
 }
 
 #park-details .park-description, #park-details .park-weather {
@@ -320,12 +325,12 @@ input {
   margin-bottom: 20px;
 }
 
-@media scree and (min-width: 768px) {
+@media screen and (min-width: 768px) {
   .park-contacts, .park-fees, .park-description, .park-weather {
     font-size: 1.5em;
   }
 
-  .park-name {
-    font-size: 2em;
+  #park-details .park-name {
+    font-size: 2.5em;
   }
 }

@@ -37,14 +37,25 @@ function getImg(photoReference) {
 
 function displayPrice(price) {
   let priceLevelHTML = "";
-  for (let i = 0; i < price; i++) {
-    priceLevelHTML += `<i class="price fas fa-dollar-sign"></i>`;
+  for (let i = 0; i < price; i ++) {
+      priceLevelHTML += `<i class="price fas fa-dollar-sign"></i>`;
   }
   return priceLevelHTML;
 }
 
 function wordInStr(s, word) {
-  return new RegExp("\\b" + word + "\\b", 'i').test(s);
+  return new RegExp("\\b"+word+"\\b", 'i').test(s);
+}
+
+function formatAddress(address) {
+  const pos = address.indexOf(',');
+  const str1 = address.slice(0, pos);
+  const str2 = address.slice(pos+1);
+  const addressHTML = `
+    <p>${str1}</p>
+    <p>${str2}</p>
+  `;
+  return addressHTML;
 }
 
 function displayFoodResults(responseJson) {
@@ -62,8 +73,8 @@ function displayFoodResults(responseJson) {
       $('.js-error-message').empty();
       flag = true;
       //alert("yes restaurants");
-      $('#results-list').append(
-        `
+    $('#results-list').append(
+      `
       <li>
         <div class="candidate">
           <div class="img-container">
@@ -77,21 +88,21 @@ function displayFoodResults(responseJson) {
               <section class="price-level">${displayPrice(candidate.price_level)}</section>
             </div>
             <div class="column">
-              <p class="candidate-address">${candidate.formatted_address}</p>
+              <p class="candidate-address">${formatAddress(candidate.formatted_address)}</p>
             </div>
           </div>
         </div>
       </li>
       `
-      );
+    );
     } else if (!flag) {
       //alert("no restaurants");
       $('.js-error-message').text("Sorry, it seems there are no restaurants near this park.");
     }
 
-
+    
   }
-
+  
 }
 
 
@@ -103,26 +114,26 @@ function getVenueDetail(find) {
     fields: "formatted_address,name,photos,price_level,rating,user_ratings_total",
     key: googleApi,
   };
-
+  
   const queryString = formatQueryParams(params);
   url += queryString;
   //console.log(url);
   fetch(proxyurl + url)
-    .then(response => {
-      //alert("reponse1");
-      if (response.ok) {
-        //alert("reponse2");
-        return response.json();
-      }
-      throw new Error(response.statusText);
-    })
-    .then(responseJson => {
-      displayFoodResults(responseJson);
-    })
-    .catch(err => {
-      //alert("getVenueDetail error " + err.message);
-      $('.js-error-message').text(`Something went wrong in getVenueDetail: ${err.message}`);
-    });
+  .then(response => {
+    //alert("reponse1");
+    if (response.ok) {
+      //alert("reponse2");
+      return response.json();
+    }
+    throw new Error(response.statusText);
+  })
+  .then(responseJson => {
+    displayFoodResults(responseJson);
+  })
+  .catch(err => {
+    //alert("getVenueDetail error " + err.message);
+    $('.js-error-message').text(`Something went wrong in getVenueDetail: ${err.message}`);
+  });
 }
 
 function getVenues(near) {
@@ -139,41 +150,41 @@ function getVenues(near) {
   //console.log(url);
 
   fetch(proxyurl + url)
-    .then(response => {
-      //alert("getVenues in");
-      if (response.ok) {
-        //alert("getVenues response ok");
-        return response.json();
+  .then(response => {
+    //alert("getVenues in");
+    if (response.ok) {
+      //alert("getVenues response ok");
+      return response.json();
+    }
+    //alert("getVenues response not ok");
+    throw new Error(response.statusText);
+  })
+  .then(responseJson => {
+    $('#results-list').empty();
+    //alert("getVenues responseJson reached");
+    //console.log("getVenue responseJson... " + JSON.stringify(responseJson));
+    //console.log("responseJson length... " + responseJson.results.length);
+    if (responseJson.results.length > 0) {
+      for (let i = 0; i < responseJson.results.length; i++) {
+        //alert("loop " + i);
+        getVenueDetail(responseJson.results[i].name);
       }
-      //alert("getVenues response not ok");
-      throw new Error(response.statusText);
-    })
-    .then(responseJson => {
-      $('#results-list').empty();
-      //alert("getVenues responseJson reached");
-      //console.log("getVenue responseJson... " + JSON.stringify(responseJson));
-      //console.log("responseJson length... " + responseJson.results.length);
-      if (responseJson.results.length > 0) {
-        for (let i = 0; i < responseJson.results.length; i++) {
-          //alert("loop " + i);
-          getVenueDetail(responseJson.results[i].name);
-        }
-      } else {
-        $('.js-error-message').text('Sorry, there are no restaurants near this park.');
-      }
-
-    })
-    .catch(err => {
-      //alert("getVenues error" + err.message);
-      $('.js-error-message').text(`Something went wrong in getVenues: ${err.message}`);
-    });
+    } else {
+      $('.js-error-message').text('Sorry, there are no restaurants near this park.');
+    }
+    
+  })
+  .catch(err => {
+    //alert("getVenues error" + err.message);
+    $('.js-error-message').text(`Something went wrong in getVenues: ${err.message}`);
+  });
 }
 
 function displaySelectedParkEats(park) {
 
   let geoCode = park.geoCode;
   let regex = /[+-]?\d+(\.\d+)?/g;
-  let floats = geoCode.match(regex).map(function (v) { return parseFloat(v); });
+  let floats = geoCode.match(regex).map(function(v) { return parseFloat(v); });
   let near = floats[0] + "," + floats[1];
   //console.log(near);
   //$('#results-list').empty();
@@ -192,29 +203,29 @@ function getGeocode(park, address) {
   url += queryString;
 
   fetch(proxyurl + url)
-    .then(response => {
-      //alert("getVenues in");
-      if (response.ok) {
-        //alert("getVenues response ok");
-        return response.json();
-      }
-      //alert("getVenues response not ok");
-      throw new Error(response.statusText);
-    })
-    .then(responseJson => {
-      let lat = responseJson.results[0].geometry.location.lat;
-      let long = responseJson.results[0].geometry.location.lng;
-      park.geoCode = lat + "," + long;
-      displaySelectedParkEats(park);
-    })
-    .catch(err => {
-      //alert("getVenues error" + err.message);
-      $('.js-error-message').text(`Something went wrong in getGeocode: ${err.message}`);
-    });
+  .then(response => {
+    //alert("getVenues in");
+    if (response.ok) {
+      //alert("getVenues response ok");
+      return response.json();
+    }
+    //alert("getVenues response not ok");
+    throw new Error(response.statusText);
+  })
+  .then(responseJson => {
+    let lat = responseJson.results[0].geometry.location.lat;
+    let long = responseJson.results[0].geometry.location.lng;
+    park.geoCode = lat + "," + long;
+    displaySelectedParkEats(park);
+  })
+  .catch(err => {
+    //alert("getVenues error" + err.message);
+    $('.js-error-message').text(`Something went wrong in getGeocode: ${err.message}`);
+  });
 }
 
 function getSelectedParkEats() {
-  $('#eats-results #results-list').on('click', '.candidate-name', function (event) {
+  $('#eats-results #results-list').on('click', '.candidate-name', function(event) {
     //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
     //alert("park id: " + id);
@@ -233,12 +244,12 @@ function getSelectedParkEats() {
     } else {
       displaySelectedParkEats(park);
     }
-
+    
   });
 }
 
 function getSelectedParkEatsImg() {
-  $('#eats-results #results-list').on('click', '.candidate-img', function (event) {
+  $('#eats-results #results-list').on('click', '.candidate-img', function(event) {
     //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
     //alert("park id: " + id);
@@ -257,7 +268,7 @@ function getSelectedParkEatsImg() {
     } else {
       displaySelectedParkEats(park);
     }
-
+    
   });
 }
 
@@ -265,29 +276,24 @@ function getParkImgs(photos) {
   let photosHTML = '';
   if (photos === null || photos.length === 0) {
     //alert("choice1");
-    photosHTML = `<img src="./images/No-image.png" alt="no image"/>`;
-  } else if (photos.length <= 3) {
-    //alert("choice2");
-    for (let i = 0; i < photos.length; i++) {
-      photosHTML += `<a href=${photos[i].url}><img src=${photos[i].url} alt=${photos[i].altText}/></a>`;
-    }
+      photosHTML = `<div class="photo"><img src="./images/No-image.png" alt="no image"/></div>`;
   } else {
     //alert("choice3");
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < photos.length; i++) {
       //console.log(photos[i].url);
       photosHTML += `<div class="photo"><a href=${photos[i].url}><img src=${photos[i].url} alt=${photos[i].altText}/></a></div>`;
     }
 
-    photosHTML += `<button onclick="javascript:location.href='./parkImgs'">View more</button>`;
+    
   }
-  console.log("photosHTML... " + photosHTML);
+  //console.log("photosHTML... " + photosHTML);
   return photosHTML;
 }
 
 function getParkOtherContacts(park) {
   let contactsHTML = '';
   if (park.phoneNumbers !== null && park.phoneNumbers.length > 0) {
-    contactsHTML += `<p>${park.phoneNumbers[0].phoneNumber}</p>`;
+    contactsHTML += `<p>${formatPhoneNumber(park.phoneNumbers[0].phoneNumber)}</p>`;
   }
   if (park.emailAddresses !== null && park.emailAddresses.length > 0) {
     contactsHTML += `<p>${park.emailAddresses[0].emailAddress}</p>`;
@@ -298,8 +304,8 @@ function getParkOtherContacts(park) {
 function getParkDescription(park) {
   let descriptionHTML = '';
   if (park.description !== null && park.description !== '') {
-    descriptionHTML +=
-      `<section class="park-description">
+    descriptionHTML += 
+    `<section class="park-description">
       <h4>About</h4>
       <p>${park.description}</p>
     </section>`;
@@ -310,8 +316,8 @@ function getParkDescription(park) {
 function getParkWeather(park) {
   let weatherHTML = '';
   if (park.weather !== null && park.weather !== '') {
-    weatherHTML +=
-      `<section class="park-weather">
+    weatherHTML += 
+    `<section class="park-weather">
       <h4>Weather</h4>
       <p>${park.weather}</p>
     </section>`;
@@ -323,7 +329,7 @@ function getParkPasses(park) {
   let passHTML = '';
   for (let i = 0; i < park.entrancePasses.length; i++) {
     passHTML +=
-      `
+    `
     <p class="fee-title">${park.entrancePasses[i].title}</p>
     <p>Fee: $${park.entrancePasses[i].cost}</p>
     <p class="fee-description">${park.entrancePasses[i].description}</p>
@@ -336,7 +342,7 @@ function getFees(park) {
   let feesHTML = '';
   for (let i = 0; i < park.entranceFees.length; i++) {
     feesHTML +=
-      `
+    `
     <p class="fee-title">${park.entranceFees[i].title}</p>
     <p>Fee: $${park.entranceFees[i].cost}</p>
     <p class="fee-description">${park.entranceFees[i].description}</p>
@@ -349,7 +355,7 @@ function getParkFees(park) {
   let feesHTML = '';
   if (park.entranceFees.length === 0 && park.entrancePasses.length > 0) {
     feesHTML +=
-      `
+    `
     <section class="park-fees">
       <div class="column fees">
         <h4>Entrance Fees</h4>
@@ -363,7 +369,7 @@ function getParkFees(park) {
     `;
   } else if (park.entranceFees.length > 0 && park.entrancePasses.length === 0) {
     feesHTML +=
-      `
+    `
     <section class="park-fees">
       <div class="column fees">
         <h4>Entrance Fees</h4>
@@ -377,7 +383,7 @@ function getParkFees(park) {
     `;
   } else if (park.entranceFees.length > 0 && park.entrancePasses.length > 0) {
     feesHTML +=
-      `
+    `
     <section class="park-fees">
       <div class="column fees">
         <h4>Entrance Fees</h4>
@@ -417,7 +423,7 @@ function displaySelectedPark(park) {
 }
 
 function getSelectedParkImg() {
-  $('#park-results #results-list').on('click', '.candidate-img', function (event) {
+  $('#park-results #results-list').on('click', '.candidate-img', function(event) {
     //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
     //alert("park id: " + id);
@@ -433,7 +439,7 @@ function getSelectedParkImg() {
 }
 
 function getSelectedPark() {
-  $('#park-results #results-list').on('click', '.candidate-name', function (event) {
+  $('#park-results #results-list').on('click', '.candidate-name', function(event) {
     //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
     //alert("park id: " + id);
@@ -495,30 +501,30 @@ function getParkRating(park, i) {
     fields: "rating,user_ratings_total",
     key: googleApi,
   };
-
+  
   const queryString = formatQueryParams(params);
   url += queryString;
   //console.log(url);
   fetch(proxyurl + url)
-    .then(response => {
-      //alert("getParkRating1");
-      if (response.ok) {
-        //alert("getParkRating2");
-        return response.json();
-      }
-      throw new Error(response.statusText);
-    })
-    .then(responseJson => {
-      //console.log("responseJson reached... " + responseJson);
-      if (responseJson.candidates.length > 0) {
-        displayParkRating(responseJson, i);
-      } else {
-        undefinedRating(i);
-      }
-    })
-    .catch(err => {
-      $('.js-error-message').text(`Something went wrong in getParkRating: ${err.message}`);
-    });
+  .then(response => {
+    //alert("getParkRating1");
+    if (response.ok) {
+      //alert("getParkRating2");
+      return response.json();
+    }
+    throw new Error(response.statusText);
+  })
+  .then(responseJson => {
+    //console.log("responseJson reached... " + responseJson);
+    if (responseJson.candidates.length > 0) {
+      displayParkRating(responseJson, i);
+    } else {
+      undefinedRating(i);
+    }
+  })
+  .catch(err => {
+    $('.js-error-message').text(`Something went wrong in getParkRating: ${err.message}`);
+  });
 }
 
 function getParkAddress(addresses) {
@@ -543,19 +549,29 @@ function displayParkAddress(addresses) {
   }
 }
 
+function formatPhoneNumber(phoneNum) {
+  let cleaned = ('' + phoneNum).replace(/\D/g, '')
+  let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+  //alert(match);
+  if (match) {
+    return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+  }
+  return null;
+}
+
 function displayParkResults(responseJson) {
   //alert("result1");
   //console.log(JSON.stringify(responseJson));
   $('#results-list').empty();
   $('.js-error-message').empty();
   //alert("result2");
-  for (let i = 0; i < responseJson.data.length; i++) {
+  for (let i=0; i < responseJson.data.length; i++) {
     //alert("responseJson in forloop");
     const parkCandidate = responseJson.data[i];
     //console.log("parkCandidate created... " + Object.keys(parkCandidate));
     if (parkCandidate.images.length === 0) {
       $('#results-list').append(
-        `<li>
+      `<li>
         <div class="candidate" id="c${i}">
           <div class="img-container">
             <a href="#" class="candidate-img"><img src="./images/No-image.png" alt="no image"/></a>
@@ -567,15 +583,15 @@ function displayParkResults(responseJson) {
             </div>
             <div class="column">
               <section class="candidate-address">${displayParkAddress(parkCandidate.addresses)}</section>
-              <p class="candidate-phoneNum">${parkCandidate.contacts.phoneNumbers[0].phoneNumber}</p>
+              <p class="candidate-phoneNum">${formatPhoneNumber(parkCandidate.contacts.phoneNumbers[0].phoneNumber)}</p>
             </div>
           </div>
         </div>
       </li>`
-      );
+    );
     } else {
       $('#results-list').append(
-        `<li>
+      `<li>
         <div class="candidate" id="c${i}">
           <div class="img-container">
             <a href="#" class="candidate-img"><img src=${parkCandidate.images[0].url} alt=${parkCandidate.images[0].altText}/></a>
@@ -587,12 +603,12 @@ function displayParkResults(responseJson) {
             </div>
             <div class="column">
               <section class="candidate-address">${displayParkAddress(parkCandidate.addresses)}</section>
-              <p class="candidate-phoneNum">${parkCandidate.contacts.phoneNumbers[0].phoneNumber}</p>
+              <p class="candidate-phoneNum">${formatPhoneNumber(parkCandidate.contacts.phoneNumbers[0].phoneNumber)}</p>
             </div>
           </div>
         </div>
       </li>`
-      );
+    );
     }
     //alert('loop ' + i);
     STORE.push({
@@ -627,41 +643,41 @@ function getParks(states) {
   //alert(url);
 
   fetch(url)
-    .then(response => {
-      //console.log("response" + response);
-      //alert("response ok?");
-      if (response.ok) {
-        //alert("response is ok");
-        return response.json();
-      }
-      //alert("response is not ok");
-      //alert("getParks1");
-      throw new Error(response.statusText);
-    })
-    .then(responseJson => {
-      //alert("responseJson received");
-      //console.log("reponseJson is ... " + JSON.stringify(responseJson));
-      if (responseJson.data.length > 0) {
-        displayParkResults(responseJson);
-      } else {
-        $('.js-error-message').text('Please enter the correct state code.');
-      }
-    })
-    .catch(err => {
-      //alert('error caught');
-      $('.js-error-message').text(`Something went wrong in getParks: ${err.message}`);
-    });
+  .then(response => {
+    //console.log("response" + response);
+    //alert("response ok?");
+    if (response.ok) {
+      //alert("response is ok");
+      return response.json();
+    }
+    //alert("response is not ok");
+    //alert("getParks1");
+    throw new Error(response.statusText);
+  })
+  .then(responseJson => {
+    //alert("responseJson received");
+    //console.log("reponseJson is ... " + JSON.stringify(responseJson));
+    if (responseJson.data.length > 0) {
+      displayParkResults(responseJson);
+    } else {
+      $('.js-error-message').text('Please enter the correct state code.');
+    }
+  })
+  .catch(err => {
+    //alert('error caught');
+    $('.js-error-message').text(`Something went wrong in getParks: ${err.message}`);
+  });
 }
 
 function watchForm() {
-  $('form').on('submit', function (event) {
+  $('form').on('submit', function(event) {
     //alert("form submitted");
     event.preventDefault();
     //STORE = [];
     STORE.length = 0;
     //$('#results-list').empty();
     $('#park-details').empty();
-    state = $('.js-state').val();
+    state = $('.js-state').val(); 
     //alert(state.length);
     state = state.toUpperCase();
     $('.js-error-message').empty();
@@ -670,7 +686,7 @@ function watchForm() {
     } else {
       $('.js-error-message').text('Please enter no more than one state code.');
     }
-
+    
   });
 }
 
