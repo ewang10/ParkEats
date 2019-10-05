@@ -10,6 +10,11 @@ body {
   background-color: #EFEFEF;
 }
 
+.cover {
+  width: 100vh;
+  margin: 0 auto;
+}
+
 .main-body {
   background-color: grey;
 }
@@ -190,16 +195,20 @@ input {
   flex: 1 1 100%;
 }
 
-.candidate .candidate-details::after {
+.candidate .candidate-details::after,
+#park-details .park-contacts::after,
+#park-details .park-fees::after {
   content: "";
   display: table;
   clear: both;
 }
 
-.candidate-details .column {
+.candidate-details .column,
+.park-contacts .column,
+.park-fees .column {
   float: left;
   width: 50%;
-  padding: 0 5px;
+  padding: 0 8px;
 }
 
 .candidate-details .candidate-name {
@@ -244,5 +253,79 @@ input {
 
   .candidate-details .candidate-name {
     font-size: 1.5em;
+  }
+}
+
+#park-details .wrapper {
+  
+  margin: 0 auto;
+  line-height: 200%;
+  padding: 10px;
+}
+
+#park-details .image-container {
+  width: 100%;
+  position: relative;
+  margin: 0 auto;
+}
+
+#park-details .image-container .photo {
+  display: inline-block;
+}
+
+#park-details .image-container img {
+  margin: 0 3px;
+  height: 170px;
+  max-width: 253px;
+}
+
+#park-details .image-container button {
+  position: absolute;
+  right: 15px;
+  bottom: 18px;
+  width: 100px;
+  padding: 7px 5px;
+  text-align: center;
+}
+
+#park-details .park-name {
+  width: 100%;
+  text-align: center;
+  margin: 10px auto;
+  font-size: 1.5em;
+}
+
+.park-contacts, .park-fees {
+  border-bottom: solid 1px grey;
+  
+  padding: 25px;
+}
+
+#park-details h4 {
+  margin-bottom: 10px;
+}
+
+#park-details .park-description, #park-details .park-weather {
+  border-bottom: solid 1px grey;
+  text-align: center;
+  padding: 25px;
+  
+}
+
+.park-fees .fee-title {
+  text-decoration: underline;
+}
+
+.park-fees .fee-description {
+  margin-bottom: 20px;
+}
+
+@media scree and (min-width: 768px) {
+  .park-contacts, .park-fees, .park-description, .park-weather {
+    font-size: 1.5em;
+  }
+
+  .park-name {
+    font-size: 2em;
   }
 }

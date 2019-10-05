@@ -61,6 +61,7 @@ function displayFoodResults(responseJson) {
     if (wordInStr(candidate.formatted_address, state)) {
       $('.js-error-message').empty();
       flag = true;
+      //alert("yes restaurants");
       $('#results-list').append(
         `
       <li>
@@ -84,6 +85,7 @@ function displayFoodResults(responseJson) {
       `
       );
     } else if (!flag) {
+      //alert("no restaurants");
       $('.js-error-message').text("Sorry, it seems there are no restaurants near this park.");
     }
 
@@ -151,10 +153,15 @@ function getVenues(near) {
       //alert("getVenues responseJson reached");
       //console.log("getVenue responseJson... " + JSON.stringify(responseJson));
       //console.log("responseJson length... " + responseJson.results.length);
-      for (let i = 0; i < responseJson.results.length; i++) {
-        //alert("loop " + i);
-        getVenueDetail(responseJson.results[i].name);
+      if (responseJson.results.length > 0) {
+        for (let i = 0; i < responseJson.results.length; i++) {
+          //alert("loop " + i);
+          getVenueDetail(responseJson.results[i].name);
+        }
+      } else {
+        $('.js-error-message').text('Sorry, there are no restaurants near this park.');
       }
+
     })
     .catch(err => {
       //alert("getVenues error" + err.message);
@@ -170,6 +177,7 @@ function displaySelectedParkEats(park) {
   let near = floats[0] + "," + floats[1];
   //console.log(near);
   //$('#results-list').empty();
+  //alert("getting venues nearby");
   getVenues(near);
 }
 
@@ -229,8 +237,199 @@ function getSelectedParkEats() {
   });
 }
 
-function displaySelectedPark(park) {
+function getSelectedParkEatsImg() {
+  $('#eats-results #results-list').on('click', '.candidate-img', function (event) {
+    //alert("park selected");
+    const id = $(this).closest('li').find('.candidate').attr('id');
+    //alert("park id: " + id);
+    let park;
+    for (let i = 0; i < STORE.length; i++) {
+      if (STORE[i].id === id) {
+        park = STORE[i];
+      }
+    }
+    //console.log(park.geoCode);
 
+    if (!park.geoCode) {
+      //alert("need to get geocode");
+      let address = getParkAddress(park.address);
+      getGeocode(park, address);
+    } else {
+      displaySelectedParkEats(park);
+    }
+
+  });
+}
+
+function getParkImgs(photos) {
+  let photosHTML = '';
+  if (photos === null || photos.length === 0) {
+    //alert("choice1");
+    photosHTML = `<img src="./images/No-image.png" alt="no image"/>`;
+  } else if (photos.length <= 3) {
+    //alert("choice2");
+    for (let i = 0; i < photos.length; i++) {
+      photosHTML += `<a href=${photos[i].url}><img src=${photos[i].url} alt=${photos[i].altText}/></a>`;
+    }
+  } else {
+    //alert("choice3");
+    for (let i = 0; i < 3; i++) {
+      //console.log(photos[i].url);
+      photosHTML += `<div class="photo"><a href=${photos[i].url}><img src=${photos[i].url} alt=${photos[i].altText}/></a></div>`;
+    }
+
+    photosHTML += `<button onclick="javascript:location.href='./parkImgs'">View more</button>`;
+  }
+  console.log("photosHTML... " + photosHTML);
+  return photosHTML;
+}
+
+function getParkOtherContacts(park) {
+  let contactsHTML = '';
+  if (park.phoneNumbers !== null && park.phoneNumbers.length > 0) {
+    contactsHTML += `<p>${park.phoneNumbers[0].phoneNumber}</p>`;
+  }
+  if (park.emailAddresses !== null && park.emailAddresses.length > 0) {
+    contactsHTML += `<p>${park.emailAddresses[0].emailAddress}</p>`;
+  }
+  return contactsHTML;
+}
+
+function getParkDescription(park) {
+  let descriptionHTML = '';
+  if (park.description !== null && park.description !== '') {
+    descriptionHTML +=
+      `<section class="park-description">
+      <h4>About</h4>
+      <p>${park.description}</p>
+    </section>`;
+  }
+  return descriptionHTML;
+}
+
+function getParkWeather(park) {
+  let weatherHTML = '';
+  if (park.weather !== null && park.weather !== '') {
+    weatherHTML +=
+      `<section class="park-weather">
+      <h4>Weather</h4>
+      <p>${park.weather}</p>
+    </section>`;
+  }
+  return weatherHTML;
+}
+
+function getParkPasses(park) {
+  let passHTML = '';
+  for (let i = 0; i < park.entrancePasses.length; i++) {
+    passHTML +=
+      `
+    <p class="fee-title">${park.entrancePasses[i].title}</p>
+    <p>Fee: $${park.entrancePasses[i].cost}</p>
+    <p class="fee-description">${park.entrancePasses[i].description}</p>
+    `;
+  }
+  return passHTML;
+}
+
+function getFees(park) {
+  let feesHTML = '';
+  for (let i = 0; i < park.entranceFees.length; i++) {
+    feesHTML +=
+      `
+    <p class="fee-title">${park.entranceFees[i].title}</p>
+    <p>Fee: $${park.entranceFees[i].cost}</p>
+    <p class="fee-description">${park.entranceFees[i].description}</p>
+    `;
+  }
+  return feesHTML;
+}
+
+function getParkFees(park) {
+  let feesHTML = '';
+  if (park.entranceFees.length === 0 && park.entrancePasses.length > 0) {
+    feesHTML +=
+      `
+    <section class="park-fees">
+      <div class="column fees">
+        <h4>Entrance Fees</h4>
+        No entrance fees available
+      </div>
+      <div class="column passes">
+        <h4>Entrance Passes</h4>
+        ${getParkPasses(park)}
+      </div>
+    </section>
+    `;
+  } else if (park.entranceFees.length > 0 && park.entrancePasses.length === 0) {
+    feesHTML +=
+      `
+    <section class="park-fees">
+      <div class="column fees">
+        <h4>Entrance Fees</h4>
+        ${getFees(park)}
+      </div>
+      <div class="column passes">
+        <h4>Entrance Passes</h4>
+        No entrance pass available
+      </div>
+    </section>
+    `;
+  } else if (park.entranceFees.length > 0 && park.entrancePasses.length > 0) {
+    feesHTML +=
+      `
+    <section class="park-fees">
+      <div class="column fees">
+        <h4>Entrance Fees</h4>
+        ${getFees(park)}
+      </div>
+      <div class="column passes">
+        <h4>Entrance Passes</h4>
+        ${getParkPasses(park)}
+      </div>
+    </section>
+    `;
+  }
+  return feesHTML;
+}
+
+function displaySelectedPark(park) {
+  $('#park-results #results-list').empty();
+  $('#park-details').empty();
+  $('#park-details').append(
+    `
+    <div class="wrapper">
+        <div class="image-container">${getParkImgs(park.photos)}</div>
+        <h3 class="park-name"><a href=${park.url}>${park.name}</a></h3>
+        <section class="park-contacts">
+          <div class="column address">
+          ${displayParkAddress(park.address)}
+          <a href=${park.directionsUrl}>Directions</a>
+          </div>
+          <div class="column phone email">${getParkOtherContacts(park)}</div>
+        </section>
+        ${getParkDescription(park)}
+        ${getParkWeather(park)}
+        ${getParkFees(park)}
+    </div>
+    `
+  );
+}
+
+function getSelectedParkImg() {
+  $('#park-results #results-list').on('click', '.candidate-img', function (event) {
+    //alert("park selected");
+    const id = $(this).closest('li').find('.candidate').attr('id');
+    //alert("park id: " + id);
+    let park;
+    for (let i = 0; i < STORE.length; i++) {
+      if (STORE[i].id === id) {
+        park = STORE[i];
+      }
+    }
+    displaySelectedPark(park);
+
+  });
 }
 
 function getSelectedPark() {
@@ -299,7 +498,7 @@ function getParkRating(park, i) {
 
   const queryString = formatQueryParams(params);
   url += queryString;
-  console.log(url);
+  //console.log(url);
   fetch(proxyurl + url)
     .then(response => {
       //alert("getParkRating1");
@@ -346,7 +545,7 @@ function displayParkAddress(addresses) {
 
 function displayParkResults(responseJson) {
   //alert("result1");
-  //console.log(responseJson);
+  //console.log(JSON.stringify(responseJson));
   $('#results-list').empty();
   $('.js-error-message').empty();
   //alert("result2");
@@ -359,7 +558,7 @@ function displayParkResults(responseJson) {
         `<li>
         <div class="candidate" id="c${i}">
           <div class="img-container">
-            <img src="./images/No-image.png" alt="no image"/>
+            <a href="#" class="candidate-img"><img src="./images/No-image.png" alt="no image"/></a>
           </div>
           <div class="candidate-details">
             <div class="column">
@@ -379,7 +578,7 @@ function displayParkResults(responseJson) {
         `<li>
         <div class="candidate" id="c${i}">
           <div class="img-container">
-            <img src=${parkCandidate.images[0].url} alt=${parkCandidate.images[0].altText}/>
+            <a href="#" class="candidate-img"><img src=${parkCandidate.images[0].url} alt=${parkCandidate.images[0].altText}/></a>
           </div>
           <div class="candidate-details">
             <div class="column">
@@ -401,8 +600,8 @@ function displayParkResults(responseJson) {
       name: parkCandidate.fullName,
       address: parkCandidate.addresses,
       photos: parkCandidate.images,
-      contacts: parkCandidate.contacts,
-      emailAddresses: parkCandidate.emailAddresses,
+      phoneNumbers: parkCandidate.contacts.phoneNumbers,
+      emailAddresses: parkCandidate.contacts.emailAddresses,
       entranceFees: parkCandidate.entranceFees,
       entrancePasses: parkCandidate.entrancePasses,
       geoCode: parkCandidate.latLong,
@@ -425,6 +624,7 @@ function getParks(states) {
   const queryString = formatQueryParams(params);
   const url = searchParkURL + '?' + queryString;
   //console.log(url);
+  //alert(url);
 
   fetch(url)
     .then(response => {
@@ -460,6 +660,7 @@ function watchForm() {
     //STORE = [];
     STORE.length = 0;
     //$('#results-list').empty();
+    $('#park-details').empty();
     state = $('.js-state').val();
     //alert(state.length);
     state = state.toUpperCase();
@@ -479,7 +680,9 @@ function handleApp() {
   watchForm();
   //handleSearchDisplay();
   getSelectedPark();
+  getSelectedParkImg();
   getSelectedParkEats();
+  getSelectedParkEatsImg();
   //displayRating("5");
 }
 
