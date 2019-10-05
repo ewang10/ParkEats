@@ -5,10 +5,37 @@
   text-decoration: none;
 }
 
+#parkeats-home {
+  background: rgba(0,0,0,0.3) url(https://images.unsplash.com/photo-1511207538754-e8555f2bc187?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60) no-repeat center center fixed;
+  background-size: cover;
+  height: 100%;
+}
+
+#parkeats-park {
+  background: url(https://images.unsplash.com/photo-1534269222346-5a896154c41d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60) no-repeat center center fixed;
+  background-size: cover;
+  height: 100%;
+  width: 100vh;
+  background-blend-mode: multiply;
+  background-color: #808080;
+  margin: 0 auto;
+}
+
+#parkeats-eats {
+  background: url(https://images.unsplash.com/photo-1561651823-34feb02250e4?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60) no-repeat center center fixed;
+  background-size: cover;
+  height: 100%;
+  width: 100vh;
+  background-blend-mode: multiply;
+  background-color: #808080;
+  margin: 0 auto;
+}
+
 body {
   font-size: 1em;
   font-family: 'Open Sans', sans-serif;
-  background-color: #EFEFEF;
+  
+  color: white;
 }
 
 .cover {
@@ -68,7 +95,7 @@ h2 {
 .eats:hover,
 .eats:focus,
 #eats .logo .eats {
-  color: #D32323;
+  color: #B30200;
 }
 
 .logo a {
@@ -113,6 +140,7 @@ label, input {
   font-size: 1.05em;
   border: none;
   font-family: 'Open Sans', sans-serif;
+  color: black;
 }
 
 label {
@@ -135,7 +163,15 @@ input {
   cursor: pointer; 
 }
 
+.park-search:hover,
+.park-search:focus {
+  background-color: #087829;
+}
 
+.eats-search:hover,
+.eats-search:focus {
+  background-color: #B30200;
+}
 
 @media screen and (min-width: 768px) {
   .search-header {
@@ -219,14 +255,6 @@ input {
   font-size: 1.5em;
 }
 
-.candidate-details .rating {
-  display: inline-block;
-
-}
-
-.candidate-details .rating-total {
-  display: inline-block;
-}
 
 .rating .star {
   color: orange;
@@ -247,6 +275,15 @@ input {
     object-fit: contain;
     margin-right: 10px;
   } 
+
+  .candidate-details .rating {
+    display: inline-block;
+
+  }
+
+  .candidate-details .rating-total {
+    display: inline-block;
+  }
 }
 
 @media screen and (min-width: 900px) {
@@ -267,19 +304,21 @@ input {
 }
 
 #park-details .image-container {
-  width: 100%;
+  width: 95%;
   position: relative;
   margin: 0 auto;
 }
 
 #park-details .image-container .photo {
   display: inline-block;
+  width: 25%;
 }
 
 #park-details .image-container img {
-  margin: 0 3px;
+  margin: 0 auto;
   height: 170px;
-  max-width: 253px;
+  max-width: 100%;
+  display: block;
 }
 
 /*
@@ -333,4 +372,22 @@ input {
   #park-details .park-name {
     font-size: 2.5em;
   }
+}
+
+.direction, 
+.park-candidate,
+.parkUrl,
+.direction:visited,
+.park-candidate:visited,
+.parkUrl:visited {
+  color: white;
+}
+
+.direction:hover,
+.park-candidate:hover,
+.parkUrl:hover,
+.direction:focus,
+.park-candidate:focus,
+.parkUrl:focus {
+  color: #087829;
 }
