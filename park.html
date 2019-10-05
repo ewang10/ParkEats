@@ -15,14 +15,32 @@
 </head>
 
 <body>
-    <main role="main" aria-live="assertive">
-        <header>
-            <div class="center" id="home">
-                <h1 class="logo">
-                    <a class="park" href="./park.html">Park</a>|<a class="eats" href="./eats.html">Eats</a>
-                </h1>
+
+    <header class="search-header">
+        <div id="park">
+            <h2 class="logo">
+                <a class="park" href="./park.html">Park</a>|<a class="eats" href="./eats.html">Eats</a>
+            </h2>
+        </div>
+        <form>
+            <div class="center">
+                <label for="state">State</label>
             </div>
-        </header>
+            <input id="state" name="state" class="js-state" placeholder="CA, MA, RI..." required />
+            <button type="submit" class="search-icon">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </header>
+
+
+    <main role="main" aria-live="assertive">
+
+        <p class="js-error-message error-message"></p>
+        <section id="park-results">
+            <ul id="results-list">
+            </ul>
+        </section>
     </main>
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"

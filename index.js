@@ -2,13 +2,14 @@
 
 let STORE = [];
 let state;
+let flag = false;
 
 const parkApi = "iOR3pCtgHytQXyLqBG0NghZScVpfPl3yfkccrEvB";
-const googleApi = "AIzaSyAiXf-w3mmDqvhBcI0742QKBPap0D0c-PM";
+const googleApi = "";
 
 const searchGoogleUrl = "https://maps.googleapis.com/maps/api/";
 const searchParkURL = "https://developer.nps.gov/api/v1/parks";
-const proxyurl = "https://cors-anywhere.herokuapp.com/";
+const proxyurl = "";
 
 
 function formatQueryParams(params) {
@@ -43,7 +44,7 @@ function displayPrice(price) {
 }
 
 function wordInStr(s, word) {
-  return new RegExp("\\b" + word + "\\b").test(s);
+  return new RegExp("\\b" + word + "\\b", 'i').test(s);
 }
 
 function displayFoodResults(responseJson) {
@@ -59,6 +60,7 @@ function displayFoodResults(responseJson) {
     //console.log("In state: " + wordInStr(candidate.formatted_address, state));
     if (wordInStr(candidate.formatted_address, state)) {
       $('.js-error-message').empty();
+      flag = true;
       $('#results-list').append(
         `
       <li>
@@ -81,7 +83,7 @@ function displayFoodResults(responseJson) {
       </li>
       `
       );
-    } else {
+    } else if (!flag) {
       $('.js-error-message').text("Sorry, it seems there are no restaurants near this park.");
     }
 
@@ -160,7 +162,7 @@ function getVenues(near) {
     });
 }
 
-function displaySelectedPark(park) {
+function displaySelectedParkEats(park) {
 
   let geoCode = park.geoCode;
   let regex = /[+-]?\d+(\.\d+)?/g;
@@ -195,7 +197,7 @@ function getGeocode(park, address) {
       let lat = responseJson.results[0].geometry.location.lat;
       let long = responseJson.results[0].geometry.location.lng;
       park.geoCode = lat + "," + long;
-      displaySelectedPark(park);
+      displaySelectedParkEats(park);
     })
     .catch(err => {
       //alert("getVenues error" + err.message);
@@ -203,8 +205,8 @@ function getGeocode(park, address) {
     });
 }
 
-function getSelectedPark() {
-  $('#results-list').on('click', '.candidate-name', function (event) {
+function getSelectedParkEats() {
+  $('#eats-results #results-list').on('click', '.candidate-name', function (event) {
     //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
     //alert("park id: " + id);
@@ -221,8 +223,28 @@ function getSelectedPark() {
       let address = getParkAddress(park.address);
       getGeocode(park, address);
     } else {
-      displaySelectedPark(park);
+      displaySelectedParkEats(park);
     }
+
+  });
+}
+
+function displaySelectedPark(park) {
+
+}
+
+function getSelectedPark() {
+  $('#park-results #results-list').on('click', '.candidate-name', function (event) {
+    //alert("park selected");
+    const id = $(this).closest('li').find('.candidate').attr('id');
+    //alert("park id: " + id);
+    let park;
+    for (let i = 0; i < STORE.length; i++) {
+      if (STORE[i].id === id) {
+        park = STORE[i];
+      }
+    }
+    displaySelectedPark(park);
 
   });
 }
@@ -243,13 +265,23 @@ function displayRating(num) {
   return ratingHTML;
 }
 
+function undefinedRating(i) {
+  $("#park-rating" + i).text("");
+}
+
 function displayParkRating(responseJson, i) {
   //console.log("park rating: " + JSON.stringify(responseJson));
   //console.log("park rating: " + responseJson);
-  const parkRatingHTML = `
+  let parkRatingHTML;
+
+  if (responseJson.candidates[0].user_ratings_total >= 0) {
+    parkRatingHTML = `
     <div class="rating">${displayRating(responseJson.candidates[0].rating)}</div>
     <p class="rating-total">${responseJson.candidates[0].user_ratings_total} Reviews</p>
   `;
+  } else {
+    undefinedRating(i);
+  }
 
   let id = "#park-rating" + i;
 
@@ -267,7 +299,7 @@ function getParkRating(park, i) {
 
   const queryString = formatQueryParams(params);
   url += queryString;
-  //console.log(url);
+  console.log(url);
   fetch(proxyurl + url)
     .then(response => {
       //alert("getParkRating1");
@@ -279,7 +311,11 @@ function getParkRating(park, i) {
     })
     .then(responseJson => {
       //console.log("responseJson reached... " + responseJson);
-      displayParkRating(responseJson, i);
+      if (responseJson.candidates.length > 0) {
+        displayParkRating(responseJson, i);
+      } else {
+        undefinedRating(i);
+      }
     })
     .catch(err => {
       $('.js-error-message').text(`Something went wrong in getParkRating: ${err.message}`);
@@ -318,8 +354,29 @@ function displayParkResults(responseJson) {
     //alert("responseJson in forloop");
     const parkCandidate = responseJson.data[i];
     //console.log("parkCandidate created... " + Object.keys(parkCandidate));
-    $('#results-list').append(
-      `<li>
+    if (parkCandidate.images.length === 0) {
+      $('#results-list').append(
+        `<li>
+        <div class="candidate" id="c${i}">
+          <div class="img-container">
+            <img src="./images/No-image.png" alt="no image"/>
+          </div>
+          <div class="candidate-details">
+            <div class="column">
+              <h3 class="candidate-name"><a href="#">${parkCandidate.fullName}</a></h3>
+              <section id="park-rating${i}">${getParkRating(parkCandidate.fullName, i)}</section>
+            </div>
+            <div class="column">
+              <section class="candidate-address">${displayParkAddress(parkCandidate.addresses)}</section>
+              <p class="candidate-phoneNum">${parkCandidate.contacts.phoneNumbers[0].phoneNumber}</p>
+            </div>
+          </div>
+        </div>
+      </li>`
+      );
+    } else {
+      $('#results-list').append(
+        `<li>
         <div class="candidate" id="c${i}">
           <div class="img-container">
             <img src=${parkCandidate.images[0].url} alt=${parkCandidate.images[0].altText}/>
@@ -336,7 +393,8 @@ function displayParkResults(responseJson) {
           </div>
         </div>
       </li>`
-    );
+      );
+    }
     //alert('loop ' + i);
     STORE.push({
       id: `c${i}`,
@@ -371,6 +429,7 @@ function getParks(states) {
   fetch(url)
     .then(response => {
       //console.log("response" + response);
+      //alert("response ok?");
       if (response.ok) {
         //alert("response is ok");
         return response.json();
@@ -381,7 +440,7 @@ function getParks(states) {
     })
     .then(responseJson => {
       //alert("responseJson received");
-      //console.log("reponseJson is ... " + responseJson);
+      //console.log("reponseJson is ... " + JSON.stringify(responseJson));
       if (responseJson.data.length > 0) {
         displayParkResults(responseJson);
       } else {
@@ -403,6 +462,7 @@ function watchForm() {
     //$('#results-list').empty();
     state = $('.js-state').val();
     //alert(state.length);
+    state = state.toUpperCase();
     $('.js-error-message').empty();
     if (state.length <= 2) {
       getParks(state);
@@ -419,6 +479,7 @@ function handleApp() {
   watchForm();
   //handleSearchDisplay();
   getSelectedPark();
+  getSelectedParkEats();
   //displayRating("5");
 }
 

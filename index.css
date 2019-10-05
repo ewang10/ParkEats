@@ -11,25 +11,63 @@ body {
 }
 
 .main-body {
-  background-color: #EFEFEF;
+  background-color: grey;
 }
 
-h1 {
+#home .logo {
+  border: solid 5px white;
+  
+}
+
+#park .logo, 
+#eats .logo {
+  border: solid 3px white;
+}
+
+h1, h2 {
   text-align: center;
   margin: 0;
+  color: white;
+  font-size: 2em;
+  letter-spacing: 4px;
+  padding: 15px 20px;
 }
 
-.logo {
-  color: black;
-  text-decoration: none;
+h2 {
+  font-size: 1.2em;
+  padding: 10px 15px;
 }
 
-.logo:hover {
-  cursor: pointer;
+@media screen and (min-width: 768px) {
+  h1 {
+    font-size: 4em;
+  }
+
+  h2 {
+    font-size: 1.5em;
+  }
+
+  #park .logo, 
+  #eats .logo{
+    border: solid 4px white;
+  }
 }
 
-.logo:visited, .logo:link {
-  color: black;
+
+.park:hover, 
+.park:focus,
+#park .logo .park {
+  color: #087829;
+}
+
+.eats:hover,
+.eats:focus,
+#eats .logo .eats {
+  color: #D32323;
+}
+
+.logo a {
+  color: white;
 }
 
 #home {
@@ -47,9 +85,18 @@ h1 {
   margin: 0 16px;
 }
 
+.search-header {
+  width: 100%;
+  padding: 20px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
 form {
   display: flex;
-  margin: 30px auto;
+  margin: 15px auto;
 }
 
 form .center {
@@ -82,16 +129,18 @@ input {
   cursor: pointer; 
 }
 
-header {
-  width: 100%;
-  padding: 20px 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+
 
 @media screen and (min-width: 768px) {
+  .search-header {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  form {
+    margin: 15px;
+  }
+
   form input {
     font-size: 1.2em;
   }
@@ -126,7 +175,7 @@ header {
 
 .candidate .img-container {
   max-height: 210px;
-  max-width: 210px;
+  width: 320px;
 }
 
 .candidate .img-container img {
