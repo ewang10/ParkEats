@@ -331,7 +331,7 @@ function getParkPasses(park) {
     passHTML +=
       `
     <p class="fee-title">${park.entrancePasses[i].title}</p>
-    <p>Fee: $${park.entrancePasses[i].cost}</p>
+    <p>Fee: $${parseFloat(park.entrancePasses[i].cost).toFixed(2)}</p>
     <p class="fee-description">${park.entrancePasses[i].description}</p>
     `;
   }
@@ -344,7 +344,7 @@ function getFees(park) {
     feesHTML +=
       `
     <p class="fee-title">${park.entranceFees[i].title}</p>
-    <p>Fee: $${park.entranceFees[i].cost}</p>
+    <p>Fee: $${parseFloat(park.entranceFees[i].cost).toFixed(2)}</p>
     <p class="fee-description">${park.entranceFees[i].description}</p>
     `;
   }
@@ -633,7 +633,6 @@ function getParks(states) {
   const params = {
     stateCode: states.split(","),
     fields: "addresses,contacts,emailAddresses,entranceFees,entrancePasses,images",
-    limit: "5",
     api_key: parkApi,
   };
 
@@ -669,20 +668,34 @@ function getParks(states) {
     });
 }
 
+function preload() {
+  document.getElementById("hidden").style.display = "none";
+  document.getElementById("loader").style.display = "block";
+  let waitTime = setTimeout(showPage, 17000);
+}
+
+function showPage() {
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("hidden").style.display = "block";
+}
+
 function watchForm() {
   $('form').on('submit', function (event) {
     //alert("form submitted");
     event.preventDefault();
     //STORE = [];
     STORE.length = 0;
-    //$('#results-list').empty();
+    $('#results-list').empty();
     $('#park-details').empty();
     state = $('.js-state').val();
     //alert(state.length);
     state = state.toUpperCase();
     $('.js-error-message').empty();
     if (state.length <= 2) {
+
       getParks(state);
+
+      preload();
     } else {
       $('.js-error-message').text('Please enter no more than one state code.');
     }

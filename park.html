@@ -17,7 +17,7 @@
 
 <body id="parkeats-park">
 
-    <header class="search-header">
+    <header id="park-header" class="search-header">
         <div id="park">
             <h2 class="logo">
                 <a class="park" href="./park.html">Park</a>|<a class="eats" href="./eats.html">Eats</a>
@@ -36,16 +36,18 @@
 
 
     <main role="main" aria-live="assertive">
+        <div id="loader"></div>
+        <div id="hidden" class="animate-bottom">
+            <p class="js-error-message error-message"></p>
+            <section id="park-results">
 
-        <p class="js-error-message error-message"></p>
-        <section id="park-results">
+                <ul id="results-list">
+                </ul>
 
-            <ul id="results-list">
-            </ul>
+            </section>
 
-        </section>
-
-        <section id="park-details"></section>
+            <section id="park-details"></section>
+        </div>
 
 
 
