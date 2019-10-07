@@ -1,6 +1,6 @@
 # ParkEats <h1>
 
-![](images/ParkEats.PGN)
+![](images/ParkEats.PNG)
 
 **link to app:** 
 https://ewang10.github.io/ParkEats/
