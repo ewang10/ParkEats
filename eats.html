@@ -34,14 +34,15 @@
         </form>
     </header>
 
-
     <main role="main" aria-live="assertive">
-
-        <p class="js-error-message error-message"></p>
-        <section id="eats-results">
-            <ul id="results-list">
-            </ul>
-        </section>
+        <div id="loader"></div>
+        <div id="hidden" class="animate-bottom">
+            <p class="js-error-message error-message"></p>
+            <section id="eats-results">
+                <ul id="results-list">
+                </ul>
+            </section>
+        </div>
     </main>
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"

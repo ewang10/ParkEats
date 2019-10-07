@@ -4,49 +4,63 @@ let STORE = [];
 let state;
 let flag = false;
 
+
 const parkApi = "iOR3pCtgHytQXyLqBG0NghZScVpfPl3yfkccrEvB";
-const googleApi = "";
+const googleApi = "AIzaSyAiXf-w3mmDqvhBcI0742QKBPap0D0c-PM";
 
 const searchGoogleUrl = "https://maps.googleapis.com/maps/api/";
 const searchParkURL = "https://developer.nps.gov/api/v1/parks";
-const proxyurl = "";
+const proxyurl = "https://cors-anywhere.herokuapp.com/";
 
-
+/*Formats the url with query parameters*/
 function formatQueryParams(params) {
   const queryItems = Object.keys(params)
     .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
   return queryItems.join('&');
 }
 
-function getImg(photoReference) {
-  let url = searchGoogleUrl + "place/photo?";
-  const params = {
-    maxheight: "210",
-    maxwidth: "210",
-    photo_reference: photoReference,
-    key: googleApi,
-  };
+/*Gets image from google place api*/
+function getImg(candidate) {
 
-  const queryString = formatQueryParams(params);
-  url += queryString;
-  //console.log(url);
-  return url;
+
+  let imgHTML;
+  if (typeof candidate.photos !== 'undefined') {
+    const photoReference = candidate.photos[0].photo_reference;
+    let url = searchGoogleUrl + "place/photo?";
+    const params = {
+      maxheight: "210",
+      maxwidth: "210",
+      photo_reference: photoReference,
+      key: googleApi,
+    };
+
+    const queryString = formatQueryParams(params);
+    url += queryString;
+    imgHTML = `<img src="${url}"/>`;
+  } else {
+    imgHTML = '<img src="./images/No-image.png" alt="No image available"/>';
+  }
+  return imgHTML;
 }
 
 
-
-function displayPrice(price) {
+/*Displays the price level*/
+function displayPrice(candidate) {
   let priceLevelHTML = "";
-  for (let i = 0; i < price; i++) {
-    priceLevelHTML += `<i class="price fas fa-dollar-sign"></i>`;
+  if (typeof candidate.price_level !== 'undefined' || candidate.price_level > 0) {
+    for (let i = 0; i < candidate.price_level; i++) {
+      priceLevelHTML += `<i class="price fas fa-dollar-sign"></i>`;
+    }
   }
   return priceLevelHTML;
 }
 
+/*Check for specific word in string*/
 function wordInStr(s, word) {
   return new RegExp("\\b" + word + "\\b", 'i').test(s);
 }
 
+/*Format the formated address from google api into two lines*/
 function formatAddress(address) {
   const pos = address.indexOf(',');
   const str1 = address.slice(0, pos);
@@ -58,34 +72,35 @@ function formatAddress(address) {
   return addressHTML;
 }
 
+/*Get total user rating of the restaurant*/
+function getTotalUserRating(candidate) {
+  if (typeof candidate.user_ratings_total !== 'undefined' || candidate.user_ratings_total >= 0) {
+    return `${candidate.user_ratings_total} Reviews`;
+  }
+  return '';
+}
+
+/*List details of restaurants*/
 function displayFoodResults(responseJson) {
-  //alert("display restaurant");
-  //alert('results0');
-  //alert('results1');
-  //console.log(responseJson);
-  //$('#results-list').empty();
-  //alert('results2');
   for (let i = 0; i < responseJson.candidates.length; i++) {
-    //alert('results3');
     let candidate = responseJson.candidates[i];
-    //console.log("In state: " + wordInStr(candidate.formatted_address, state));
-    if (wordInStr(candidate.formatted_address, state)) {
+    //Makes sure the restaurant is in the state user provided
+    if (candidate.formatted_address && wordInStr(candidate.formatted_address, state)) {
       $('.js-error-message').empty();
       flag = true;
-      //alert("yes restaurants");
       $('#results-list').append(
         `
       <li>
         <div class="candidate">
           <div class="img-container">
-            <img src="${getImg(candidate.photos[0].photo_reference)}"/>
+            ${getImg(candidate)}
           </div>
           <div class="candidate-details">
             <div class="column">
               <h3 class="candidate-name">${candidate.name}</h3>
-              <section class="rating">${displayRating(candidate.rating)}</section>
-              <p class="rating-total">${candidate.user_ratings_total} Reviews</p>
-              <section class="price-level">${displayPrice(candidate.price_level)}</section>
+              <section class="rating">${displayRating(candidate)}</section>
+              <p class="rating-total">${getTotalUserRating(candidate)}</p>
+              <section class="price-level">${displayPrice(candidate)}</section>
             </div>
             <div class="column">
               <p class="candidate-address">${formatAddress(candidate.formatted_address)}</p>
@@ -96,16 +111,12 @@ function displayFoodResults(responseJson) {
       `
       );
     } else if (!flag) {
-      //alert("no restaurants");
       $('.js-error-message').text("Sorry, it seems there are no restaurants near this park.");
     }
-
-
   }
-
 }
 
-
+/*Get details of a restaurant*/
 function getVenueDetail(find) {
   let url = searchGoogleUrl + "place/findplacefromtext/json?";
   const params = {
@@ -117,12 +128,9 @@ function getVenueDetail(find) {
 
   const queryString = formatQueryParams(params);
   url += queryString;
-  //console.log(url);
   fetch(proxyurl + url)
     .then(response => {
-      //alert("reponse1");
       if (response.ok) {
-        //alert("reponse2");
         return response.json();
       }
       throw new Error(response.statusText);
@@ -131,11 +139,11 @@ function getVenueDetail(find) {
       displayFoodResults(responseJson);
     })
     .catch(err => {
-      //alert("getVenueDetail error " + err.message);
       $('.js-error-message').text(`Something went wrong in getVenueDetail: ${err.message}`);
     });
 }
 
+/*Get all restaurants near the selected park*/
 function getVenues(near) {
   let url = searchGoogleUrl + "place/nearbysearch/json?";
   const params = {
@@ -147,51 +155,41 @@ function getVenues(near) {
 
   const queryString = formatQueryParams(params);
   url += queryString;
-  //console.log(url);
 
   fetch(proxyurl + url)
     .then(response => {
-      //alert("getVenues in");
       if (response.ok) {
-        //alert("getVenues response ok");
         return response.json();
       }
-      //alert("getVenues response not ok");
       throw new Error(response.statusText);
     })
     .then(responseJson => {
       $('#results-list').empty();
-      //alert("getVenues responseJson reached");
-      //console.log("getVenue responseJson... " + JSON.stringify(responseJson));
-      //console.log("responseJson length... " + responseJson.results.length);
+
       if (responseJson.results.length > 0) {
         for (let i = 0; i < responseJson.results.length; i++) {
-          //alert("loop " + i);
           getVenueDetail(responseJson.results[i].name);
         }
       } else {
         $('.js-error-message').text('Sorry, there are no restaurants near this park.');
       }
-
     })
     .catch(err => {
-      //alert("getVenues error" + err.message);
       $('.js-error-message').text(`Something went wrong in getVenues: ${err.message}`);
     });
 }
 
+/*Show the restaurants near the park based on the geocode of the park*/
 function displaySelectedParkEats(park) {
 
   let geoCode = park.geoCode;
   let regex = /[+-]?\d+(\.\d+)?/g;
   let floats = geoCode.match(regex).map(function (v) { return parseFloat(v); });
   let near = floats[0] + "," + floats[1];
-  //console.log(near);
-  //$('#results-list').empty();
-  //alert("getting venues nearby");
   getVenues(near);
 }
 
+/*Get geocode of the park based on park address*/
 function getGeocode(park, address) {
   let url = searchGoogleUrl + "geocode/json?";
   const params = {
@@ -204,12 +202,9 @@ function getGeocode(park, address) {
 
   fetch(proxyurl + url)
     .then(response => {
-      //alert("getVenues in");
       if (response.ok) {
-        //alert("getVenues response ok");
         return response.json();
       }
-      //alert("getVenues response not ok");
       throw new Error(response.statusText);
     })
     .then(responseJson => {
@@ -219,28 +214,33 @@ function getGeocode(park, address) {
       displaySelectedParkEats(park);
     })
     .catch(err => {
-      //alert("getVenues error" + err.message);
       $('.js-error-message').text(`Something went wrong in getGeocode: ${err.message}`);
     });
 }
 
+/*Select park by clicking on the image*/
 function getSelectedParkEats() {
   $('#eats-results #results-list').on('click', '.candidate-name', function (event) {
-    //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
-    //alert("park id: " + id);
     let park;
     for (let i = 0; i < STORE.length; i++) {
       if (STORE[i].id === id) {
         park = STORE[i];
       }
     }
-    //console.log(park.geoCode);
 
+    //If geocode is missing from park api, get the geocode
+    //with park address. Otherwise, show that there are no
+    //restaurants near the park
     if (!park.geoCode) {
-      //alert("need to get geocode");
-      let address = getParkAddress(park.address);
-      getGeocode(park, address);
+      if (park.address.length !== 0) {
+        let address = getParkAddress(park.address);
+        getGeocode(park, address);
+      } else {
+        $('#eats-results #results-list').empty();
+        $('.js-error-message').text('Sorry, there are no restaurants neaby this park.');
+      }
+
     } else {
       displaySelectedParkEats(park);
     }
@@ -248,48 +248,45 @@ function getSelectedParkEats() {
   });
 }
 
+/*Get selected park by clicking on park name*/
 function getSelectedParkEatsImg() {
   $('#eats-results #results-list').on('click', '.candidate-img', function (event) {
-    //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
-    //alert("park id: " + id);
     let park;
     for (let i = 0; i < STORE.length; i++) {
       if (STORE[i].id === id) {
         park = STORE[i];
       }
     }
-    //console.log(park.geoCode);
 
     if (!park.geoCode) {
-      //alert("need to get geocode");
-      let address = getParkAddress(park.address);
-      getGeocode(park, address);
+      if (park.address.length !== 0) {
+        let address = getParkAddress(park.address);
+        getGeocode(park, address);
+      } else {
+        $('#eats-results #results-list').empty();
+        $('.js-error-message').text('Sorry, there are no restaurants neaby this park.');
+      }
     } else {
       displaySelectedParkEats(park);
     }
-
   });
 }
 
+/*Get park images if there are any. Otherwise, show that there are no images available*/
 function getParkImgs(photos) {
   let photosHTML = '';
   if (photos === null || photos.length === 0) {
-    //alert("choice1");
     photosHTML = `<div class="photo"><img src="./images/No-image.png" alt="no image"/></div>`;
   } else {
-    //alert("choice3");
     for (let i = 0; i < photos.length; i++) {
-      //console.log(photos[i].url);
       photosHTML += `<div class="photo"><a target="_blank" href=${photos[i].url}><img src=${photos[i].url} alt=${photos[i].altText}/></a></div>`;
     }
-
-
   }
-  //console.log("photosHTML... " + photosHTML);
   return photosHTML;
 }
 
+/*Get park phone number and email if there are any*/
 function getParkOtherContacts(park) {
   let contactsHTML = '';
   if (park.phoneNumbers !== null && park.phoneNumbers.length > 0) {
@@ -301,6 +298,7 @@ function getParkOtherContacts(park) {
   return contactsHTML;
 }
 
+/*Get park description if there's any*/
 function getParkDescription(park) {
   let descriptionHTML = '';
   if (park.description !== null && park.description !== '') {
@@ -313,6 +311,7 @@ function getParkDescription(park) {
   return descriptionHTML;
 }
 
+/*Get park weather if there's any*/
 function getParkWeather(park) {
   let weatherHTML = '';
   if (park.weather !== null && park.weather !== '') {
@@ -325,6 +324,7 @@ function getParkWeather(park) {
   return weatherHTML;
 }
 
+/*Get park passes*/
 function getParkPasses(park) {
   let passHTML = '';
   for (let i = 0; i < park.entrancePasses.length; i++) {
@@ -338,6 +338,7 @@ function getParkPasses(park) {
   return passHTML;
 }
 
+/*Get park fees*/
 function getFees(park) {
   let feesHTML = '';
   for (let i = 0; i < park.entranceFees.length; i++) {
@@ -351,6 +352,7 @@ function getFees(park) {
   return feesHTML;
 }
 
+/*Get park fees/passes if there are any*/
 function getParkFees(park) {
   let feesHTML = '';
   if (park.entranceFees.length === 0 && park.entrancePasses.length > 0) {
@@ -399,6 +401,17 @@ function getParkFees(park) {
   return feesHTML;
 }
 
+/*Get park directions if there's any*/
+function getParkDirections(url) {
+  if (url !== null && url !== "") {
+    const directionsUrl =
+      `<a class="direction" target="_blank" href=${url}>Directions</a>`;
+    return directionsUrl;
+  }
+  return "";
+}
+
+/*Display park details based on the selected park*/
 function displaySelectedPark(park) {
   $('#park-results #results-list').empty();
   $('#park-details').empty();
@@ -410,7 +423,7 @@ function displaySelectedPark(park) {
         <section class="park-contacts">
           <div class="column address">
           ${displayParkAddress(park.address)}
-          <a class="direction" target="_blank" href=${park.directionsUrl}>Directions</a>
+          ${getParkDirections(park.directionsUrl)}
           </div>
           <div class="column phone email">${getParkOtherContacts(park)}</div>
         </section>
@@ -422,11 +435,10 @@ function displaySelectedPark(park) {
   );
 }
 
+/*Select park by clicking on the image*/
 function getSelectedParkImg() {
   $('#park-results #results-list').on('click', '.candidate-img', function (event) {
-    //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
-    //alert("park id: " + id);
     let park;
     for (let i = 0; i < STORE.length; i++) {
       if (STORE[i].id === id) {
@@ -434,15 +446,13 @@ function getSelectedParkImg() {
       }
     }
     displaySelectedPark(park);
-
   });
 }
 
+/*Select park by clicking on the park name*/
 function getSelectedPark() {
   $('#park-results #results-list').on('click', '.candidate-name', function (event) {
-    //alert("park selected");
     const id = $(this).closest('li').find('.candidate').attr('id');
-    //alert("park id: " + id);
     let park;
     for (let i = 0; i < STORE.length; i++) {
       if (STORE[i].id === id) {
@@ -450,38 +460,40 @@ function getSelectedPark() {
       }
     }
     displaySelectedPark(park);
-
   });
 }
 
-function displayRating(num) {
-  //let num = Number(rating);
+/*Show park rating stars*/
+function displayRating(candidate) {
   let ratingHTML = "";
-  for (let i = 0; i < 5; i++) {
-    if (num >= 1 || (num < 1 && num > 0.5)) {
-      ratingHTML += `<i class="star full-star fas fa-star"></i>`;
-    } else if (num <= 0.5 && num > 0) {
-      ratingHTML += `<i class="star half-star fas fa-star-half-alt"></i>`;
-    } else {
-      ratingHTML += `<i class="star no-star far fa-star"></i>`;
+  if (typeof candidate.rating !== 'undefined' || candidate.rating === 0) {
+    let num = candidate.rating;
+    for (let i = 0; i < 5; i++) {
+      if (num >= 1 || (num < 1 && num > 0.5)) {
+        ratingHTML += `<i class="star full-star fas fa-star"></i>`;
+      } else if (num <= 0.5 && num > 0) {
+        ratingHTML += `<i class="star half-star fas fa-star-half-alt"></i>`;
+      } else {
+        ratingHTML += `<i class="star no-star far fa-star"></i>`;
+      }
+      num--;
     }
-    num--;
   }
   return ratingHTML;
 }
 
+/*If no park rating available, show nothing*/
 function undefinedRating(i) {
   $("#park-rating" + i).text("");
 }
 
+/*Display park rating and total number of reviews if there are any*/
 function displayParkRating(responseJson, i) {
-  //console.log("park rating: " + JSON.stringify(responseJson));
-  //console.log("park rating: " + responseJson);
   let parkRatingHTML;
 
-  if (responseJson.candidates[0].user_ratings_total >= 0) {
+  if (typeof responseJson.candidates[0].user_ratings_total !== 'undefined' || responseJson.candidates[0].user_ratings_total >= 0) {
     parkRatingHTML = `
-    <div class="rating">${displayRating(responseJson.candidates[0].rating)}</div>
+    <div class="rating">${displayRating(responseJson.candidates[0])}</div>
     <p class="rating-total">${responseJson.candidates[0].user_ratings_total} Reviews</p>
   `;
   } else {
@@ -493,6 +505,7 @@ function displayParkRating(responseJson, i) {
   $(id).html(parkRatingHTML);
 }
 
+/*Get parking rating with google place api*/
 function getParkRating(park, i) {
   let url = searchGoogleUrl + "place/findplacefromtext/json?";
   const params = {
@@ -504,18 +517,14 @@ function getParkRating(park, i) {
 
   const queryString = formatQueryParams(params);
   url += queryString;
-  //console.log(url);
   fetch(proxyurl + url)
     .then(response => {
-      //alert("getParkRating1");
       if (response.ok) {
-        //alert("getParkRating2");
         return response.json();
       }
       throw new Error(response.statusText);
     })
     .then(responseJson => {
-      //console.log("responseJson reached... " + responseJson);
       if (responseJson.candidates.length > 0) {
         displayParkRating(responseJson, i);
       } else {
@@ -527,13 +536,16 @@ function getParkRating(park, i) {
     });
 }
 
+/*Helper function of getGeocode()*/
 function getParkAddress(addresses) {
   let address = addresses[0];
   return `${address.line1} ${address.city}, ${address.stateCode} ${address.postalCode}`;
 
 }
 
+/*Display park address in listed of parks. If no address, show no address available*/
 function displayParkAddress(addresses) {
+  let addressHTML;
   if (addresses.length > 0) {
     let physicalAddress = {};
     for (let i = 0; i < addresses.length; i++) {
@@ -541,60 +553,69 @@ function displayParkAddress(addresses) {
         physicalAddress = addresses[i];
       }
     }
-    const addressHTML = `
+    if (physicalAddress.length === 0) {
+      physicalAddress = addresses[0];
+    }
+    addressHTML = `
       <p>${physicalAddress.line1}</p>
       <p>${physicalAddress.city}, ${physicalAddress.stateCode} ${physicalAddress.postalCode}</p>
     `;
-    return addressHTML;
+
+  } else {
+    addressHTML = '<p>No address available</p>';
   }
+  return addressHTML;
 }
 
+/*Format phone numbers in the format 
+(###) ###-#### or +1 (###) ###-####*/
 function formatPhoneNumber(phoneNum) {
-  let cleaned = ('' + phoneNum).replace(/\D/g, '')
-  let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-  //alert(match);
+  let cleaned = ('' + phoneNum).replace(/\D/g, '');
+  let match = cleaned.match(/^(1|)?(\d{3})(\d{3})(\d{4})$/);
   if (match) {
-    return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+    let intlCode = (match[1] ? '+1 ' : '');
+    return [intlCode, '(', match[2], ') ', match[3], '-', match[4]].join('');
   }
-  return null;
+  return "";
 }
 
+/*Get header image for listed of parks. If no image, show no image available*/
+function getCandidateImg(images) {
+  let imageHTML;
+  if (images.length === 0) {
+    imageHTML =
+      '<a href="#" class="candidate-img"><img src="./images/No-image.png" alt="no image"/></a>';
+  } else {
+    imageHTML =
+      `<a href="#" class="candidate-img"><img src=${images[0].url} alt=${images[0].altText}/></a>`;
+  }
+  return imageHTML;
+}
+
+function getPhoneNumber(phoneNumbers) {
+  let phoneNumberHTML;
+  if (phoneNumbers.length > 0) {
+    phoneNumberHTML =
+      `<p class="candidate-phoneNum">${formatPhoneNumber(phoneNumbers[0].phoneNumber)}</p>`;
+  } else {
+    phoneNumberHTML =
+      `<p class="candidate-phoneNum"></p>`;
+  }
+  return phoneNumberHTML;
+}
+
+/*Display a list of parks based on state code provided by user*/
 function displayParkResults(responseJson) {
-  //alert("result1");
-  //console.log(JSON.stringify(responseJson));
   $('#results-list').empty();
   $('.js-error-message').empty();
-  //alert("result2");
   for (let i = 0; i < responseJson.data.length; i++) {
-    //alert("responseJson in forloop");
     const parkCandidate = responseJson.data[i];
-    //console.log("parkCandidate created... " + Object.keys(parkCandidate));
-    if (parkCandidate.images.length === 0) {
-      $('#results-list').append(
-        `<li>
+
+    $('#results-list').append(
+      `<li>
         <div class="candidate" id="c${i}">
           <div class="img-container">
-            <a href="#" class="candidate-img"><img src="./images/No-image.png" alt="no image"/></a>
-          </div>
-          <div class="candidate-details">
-            <div class="column">
-              <h3 class="candidate-name"><a class="park-candidate" href="#">${parkCandidate.fullName}</a></h3>
-              <section id="park-rating${i}">${getParkRating(parkCandidate.fullName, i)}</section>
-            </div>
-            <div class="column">
-              <section class="candidate-address">${displayParkAddress(parkCandidate.addresses)}</section>
-              <p class="candidate-phoneNum">${formatPhoneNumber(parkCandidate.contacts.phoneNumbers[0].phoneNumber)}</p>
-            </div>
-          </div>
-        </div>
-      </li>`
-      );
-    } else {
-      $('#results-list').append(
-        `<li>
-        <div class="candidate" id="c${i}">
-          <div class="img-container">
-            <a href="#" class="candidate-img"><img src=${parkCandidate.images[0].url} alt=${parkCandidate.images[0].altText}/></a>
+            ${getCandidateImg(parkCandidate.images)}
           </div>
           <div class="candidate-details">
             <div class="column">
@@ -603,14 +624,14 @@ function displayParkResults(responseJson) {
             </div>
             <div class="column">
               <section class="candidate-address">${displayParkAddress(parkCandidate.addresses)}</section>
-              <p class="candidate-phoneNum">${formatPhoneNumber(parkCandidate.contacts.phoneNumbers[0].phoneNumber)}</p>
+              ${getPhoneNumber(parkCandidate.contacts.phoneNumbers)}   
             </div>
           </div>
         </div>
       </li>`
-      );
-    }
-    //alert('loop ' + i);
+    );
+
+    //Store each park information in STORE array for later uses
     STORE.push({
       id: `c${i}`,
       name: parkCandidate.fullName,
@@ -629,6 +650,7 @@ function displayParkResults(responseJson) {
   }
 }
 
+/*Get all the parks in the state provided by the user*/
 function getParks(states) {
   const params = {
     stateCode: states.split(","),
@@ -638,24 +660,16 @@ function getParks(states) {
 
   const queryString = formatQueryParams(params);
   const url = searchParkURL + '?' + queryString;
-  //console.log(url);
-  //alert(url);
 
   fetch(url)
     .then(response => {
-      //console.log("response" + response);
-      //alert("response ok?");
       if (response.ok) {
-        //alert("response is ok");
         return response.json();
       }
-      //alert("response is not ok");
-      //alert("getParks1");
       throw new Error(response.statusText);
     })
     .then(responseJson => {
-      //alert("responseJson received");
-      //console.log("reponseJson is ... " + JSON.stringify(responseJson));
+      //Ensure the correct state code was provided
       if (responseJson.data.length > 0) {
         displayParkResults(responseJson);
       } else {
@@ -663,43 +677,40 @@ function getParks(states) {
       }
     })
     .catch(err => {
-      //alert('error caught');
       $('.js-error-message').text(`Something went wrong in getParks: ${err.message}`);
     });
 }
 
+/*Preloading until all park information are retrieved from national parks api*/
 function preload() {
   document.getElementById("hidden").style.display = "none";
   document.getElementById("loader").style.display = "block";
   let waitTime = setTimeout(showPage, 17000);
 }
 
+/*Show page contents when all information are loaded from national parks api*/
 function showPage() {
   document.getElementById("loader").style.display = "none";
   document.getElementById("hidden").style.display = "block";
 }
 
+//Watch when form is submitted by user.
+//Ensure only one state code is provided
 function watchForm() {
   $('form').on('submit', function (event) {
-    //alert("form submitted");
     event.preventDefault();
-    //STORE = [];
     STORE.length = 0;
     $('#results-list').empty();
     $('#park-details').empty();
     state = $('.js-state').val();
-    //alert(state.length);
     state = state.toUpperCase();
     $('.js-error-message').empty();
     if (state.length <= 2) {
-
       getParks(state);
-
       preload();
     } else {
       $('.js-error-message').text('Please enter no more than one state code.');
     }
-
   });
 }
 
@@ -707,12 +718,10 @@ function watchForm() {
 
 function handleApp() {
   watchForm();
-  //handleSearchDisplay();
   getSelectedPark();
   getSelectedParkImg();
   getSelectedParkEats();
   getSelectedParkEatsImg();
-  //displayRating("5");
 }
 
 $(handleApp);
