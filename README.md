@@ -1,4 +1,4 @@
-# ParkEats <h1>
+# ParkEats 
 
 ![](images/ParkEats.PNG)
 
