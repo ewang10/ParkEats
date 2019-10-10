@@ -15,15 +15,42 @@
     <link href="index.css" rel="stylesheet" type="text/css" />
 </head>
 
-<body id="parkeats-home">
-    <main role="main" aria-live="assertive">
-        <header>
-            <div class="center" id="home">
-                <h1 class="logo">
-                    <a class="park" href="./park.html">Park</a>|<a class="eats" href="./eats.html">Eats</a>
-                </h1>
+<body id="parkeats-park">
+
+    <header id="search">
+
+        <h2 class="logo">
+            <a href="./index.html">ParkEats</a>
+        </h2>
+
+        <form>
+            <div class="center">
+                <label for="state">State</label>
             </div>
-        </header>
+            <input id="state" name="state" class="js-state" placeholder="CA, MA, RI..." required />
+            <button type="submit" class="park-search search-icon">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </header>
+
+    <main role="main" aria-live="assertive">
+        <div id="loader"></div>
+        <div id="hidden" class="animate-bottom">
+            <p class="js-error-message error-message"></p>
+            <section id="park-results">
+                <ul id="results-list"></ul>
+            </section>
+
+            <section id="park-content">
+                <section id="park-details"></section>
+                <section id="park-eats" class="slider">
+                    <p class="no-restaurant-message error-message"></p>
+                    <ul id="food-results-list"></ul>
+                </section>
+            </section>
+        </div>
+
     </main>
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"

@@ -87,8 +87,9 @@ function displayFoodResults(responseJson) {
     //Makes sure the restaurant is in the state user provided
     if (candidate.formatted_address && wordInStr(candidate.formatted_address, state)) {
       $('.js-error-message').empty();
+
       flag = true;
-      $('#results-list').append(
+      $('#food-results-list').append(
         `
       <li>
         <div class="candidate">
@@ -114,6 +115,7 @@ function displayFoodResults(responseJson) {
       $('.js-error-message').text("Sorry, it seems there are no restaurants near this park.");
     }
   }
+
 }
 
 /*Get details of a restaurant*/
@@ -164,7 +166,7 @@ function getVenues(near) {
       throw new Error(response.statusText);
     })
     .then(responseJson => {
-      $('#results-list').empty();
+      $('#food-results-list').empty();
 
       if (responseJson.results.length > 0) {
         for (let i = 0; i < responseJson.results.length; i++) {
@@ -218,60 +220,6 @@ function getGeocode(park, address) {
     });
 }
 
-/*Select park by clicking on the image*/
-function getSelectedParkEats() {
-  $('#eats-results #results-list').on('click', '.candidate-name', function (event) {
-    const id = $(this).closest('li').find('.candidate').attr('id');
-    let park;
-    for (let i = 0; i < STORE.length; i++) {
-      if (STORE[i].id === id) {
-        park = STORE[i];
-      }
-    }
-
-    //If geocode is missing from park api, get the geocode
-    //with park address. Otherwise, show that there are no
-    //restaurants near the park
-    if (!park.geoCode) {
-      if (park.address.length !== 0) {
-        let address = getParkAddress(park.address);
-        getGeocode(park, address);
-      } else {
-        $('#eats-results #results-list').empty();
-        $('.js-error-message').text('Sorry, there are no restaurants neaby this park.');
-      }
-
-    } else {
-      displaySelectedParkEats(park);
-    }
-
-  });
-}
-
-/*Get selected park by clicking on park name*/
-function getSelectedParkEatsImg() {
-  $('#eats-results #results-list').on('click', '.candidate-img', function (event) {
-    const id = $(this).closest('li').find('.candidate').attr('id');
-    let park;
-    for (let i = 0; i < STORE.length; i++) {
-      if (STORE[i].id === id) {
-        park = STORE[i];
-      }
-    }
-
-    if (!park.geoCode) {
-      if (park.address.length !== 0) {
-        let address = getParkAddress(park.address);
-        getGeocode(park, address);
-      } else {
-        $('#eats-results #results-list').empty();
-        $('.js-error-message').text('Sorry, there are no restaurants neaby this park.');
-      }
-    } else {
-      displaySelectedParkEats(park);
-    }
-  });
-}
 
 /*Get park images if there are any. Otherwise, show that there are no images available*/
 function getParkImgs(photos) {
@@ -413,8 +361,9 @@ function getParkDirections(url) {
 
 /*Display park details based on the selected park*/
 function displaySelectedPark(park) {
-  $('#park-results #results-list').empty();
+  $('#results-list').empty();
   $('#park-details').empty();
+
   $('#park-details').append(
     `
     <div class="wrapper">
@@ -437,21 +386,40 @@ function displaySelectedPark(park) {
 
 /*Select park by clicking on the image*/
 function getSelectedParkImg() {
-  $('#park-results #results-list').on('click', '.candidate-img', function (event) {
+  $('#results-list').on('click', '.candidate-img', function (event) {
     const id = $(this).closest('li').find('.candidate').attr('id');
     let park;
     for (let i = 0; i < STORE.length; i++) {
       if (STORE[i].id === id) {
         park = STORE[i];
+
       }
     }
+
     displaySelectedPark(park);
+    //If geocode is missing from park api, get the geocode
+    //with park address. Otherwise, show that there are no
+    //restaurants near the park
+    if (!park.geoCode) {
+      if (park.address.length !== 0) {
+        let address = getParkAddress(park.address);
+
+        getGeocode(park, address);
+      } else {
+        $('#results-list').empty();
+
+        $('.js-error-message').text('Sorry, there are no restaurants neaby this park.');
+      }
+
+    } else {
+      displaySelectedParkEats(park);
+    }
   });
 }
 
 /*Select park by clicking on the park name*/
 function getSelectedPark() {
-  $('#park-results #results-list').on('click', '.candidate-name', function (event) {
+  $('#results-list').on('click', '.candidate-name', function (event) {
     const id = $(this).closest('li').find('.candidate').attr('id');
     let park;
     for (let i = 0; i < STORE.length; i++) {
@@ -460,6 +428,21 @@ function getSelectedPark() {
       }
     }
     displaySelectedPark(park);
+    //If geocode is missing from park api, get the geocode
+    //with park address. Otherwise, show that there are no
+    //restaurants near the park
+    if (!park.geoCode) {
+      if (park.address.length !== 0) {
+        let address = getParkAddress(park.address);
+        getGeocode(park, address);
+      } else {
+        $('#results-list').empty();
+        $('.js-error-message').text('Sorry, there are no restaurants neaby this park.');
+      }
+
+    } else {
+      displaySelectedParkEats(park);
+    }
   });
 }
 
@@ -608,6 +591,7 @@ function getPhoneNumber(phoneNumbers) {
 function displayParkResults(responseJson) {
   $('#results-list').empty();
   $('.js-error-message').empty();
+
   for (let i = 0; i < responseJson.data.length; i++) {
     const parkCandidate = responseJson.data[i];
 
@@ -701,10 +685,11 @@ function watchForm() {
     event.preventDefault();
     STORE.length = 0;
     $('#results-list').empty();
-    $('#park-details').empty();
+
     state = $('.js-state').val();
     state = state.toUpperCase();
     $('.js-error-message').empty();
+
     if (state.length <= 2) {
       getParks(state);
       preload();
@@ -716,12 +701,49 @@ function watchForm() {
 
 
 
+
+
+function handleCarousel() {
+  let timer = 4000;
+
+  let i = 0;
+  let max = $('#food-results-list > li').length;
+
+  $("#food-results-list > li").eq(i).addClass('active').css('left', '0');
+  $("#food-results-list > li").eq(i + 1).addClass('active').css('left', '25%');
+  $("#food-results-list > li").eq(i + 2).addClass('active').css('left', '50%');
+  $("#food-results-list > li").eq(i + 3).addClass('active').css('left', '75%');
+
+
+  setInterval(function () {
+
+    $("#food-results-list > li").removeClass('active');
+
+    $("#food-results-list > li").eq(i).css('transition-delay', '0.25s');
+    $("#food-results-list > li").eq(i + 1).css('transition-delay', '0.5s');
+    $("#food-results-list > li").eq(i + 2).css('transition-delay', '0.75s');
+    $("#food-results-list > li").eq(i + 3).css('transition-delay', '1s');
+
+    if (i < max - 4) {
+      i = i + 4;
+    }
+
+    else {
+      i = 0;
+    }
+
+    $("#food-results-list > li").eq(i).css('left', '0').addClass('active').css('transition-delay', '1.25s');
+    $("#food-results-list > li").eq(i + 1).css('left', '25%').addClass('active').css('transition-delay', '1.5s');
+    $("#food-results-list > li").eq(i + 2).css('left', '50%').addClass('active').css('transition-delay', '1.75s');
+    $("#food-results-list > li").eq(i + 3).css('left', '75%').addClass('active').css('transition-delay', '2s');
+
+  }, timer);
+}
+
 function handleApp() {
   watchForm();
   getSelectedPark();
   getSelectedParkImg();
-  getSelectedParkEats();
-  getSelectedParkEatsImg();
 }
 
 $(handleApp);
